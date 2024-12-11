@@ -11,11 +11,11 @@
 ***c_cmd***类型:设置光标操作  
 后缀小写字母个数与调用哪个的重载函数有关   
  后缀无小写字母  
-`colorcout& cursor(c_cmd);`
- 后缀有一个小写字母 MOVE_RIGHT_n  
-`colorcout& cursor(c_cmd,int);`  
- 后缀有两个小写字母 SET_x_y
-`colorcout& cursor(c_cmd,int,int);`  
+`colorcout& cursor(c_cmd);`   
+ 后缀有一个小写字母 MOVE_RIGHT_n      
+`colorcout& cursor(c_cmd,int);`     
+ 后缀有两个小写字母 SET_x_y    
+`colorcout& cursor(c_cmd,int,int);`     
 ### block函数显示特定图形
 ***b_block***类型:unicode字符映射的类型  
 ***b_color***类型:颜色  
