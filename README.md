@@ -1,7 +1,7 @@
 # ColorCout
  color cout for linux cpp    
    终端需要支持ANSI转义序列，一般linux终端都会支持，但一般都不会支持所有的指令，所以具体效果视终端而定。
-   [unicode取值网站](https://web.archive.org/web/20060206022229/http://enterprise.aacc.cc.md.us/~rhs/ansi.html)
+   [unicode取值网站](https://symbl.cc/cn/unicode-table/#block-elements)
 ## 功能  
 ### font函数设置字体颜色、背景、斜体等   
     f_color类型:设置字体颜色

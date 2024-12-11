@@ -3,12 +3,6 @@
 
 #include <iostream>
 
-/*****************************
-	
-	https://web.archive.org/web/20060206022229/http://enterprise.aacc.cc.md.us/~rhs/ansi.html
-*****************************/
-
-
 enum class f_color:int
 {
 	NONE=0,     	// 默认
@@ -114,8 +108,6 @@ enum class s_cmd:int
 typedef f_color b_color;
 enum class b_block: int
 {
-	//https://symbl.cc/cn/unicode-table/#block-elements
-
 	BLOCK_DOWN_1_8 = 0,	// "▁" 
 	BLOCK_DOWN_2_8,		// "▂" 
 	BLOCK_DOWN_3_8,		// "▃" 
