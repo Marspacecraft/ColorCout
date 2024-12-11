@@ -10,16 +10,16 @@
 ### cursor函数设置光标移动  
 ***c_cmd***类型:设置光标操作  
 后缀小写字母个数与调用哪个的重载函数有关  
-`colorcout& cursor(c_cmd);//后缀无小写字母
-colorcout& cursor(c_cmd,int);//后缀有一个小写字母 MOVE_RIGHT_n
+`colorcout& cursor(c_cmd);//后缀无小写字母  
+colorcout& cursor(c_cmd,int);//后缀有一个小写字母 MOVE_RIGHT_n  
 colorcout& cursor(c_cmd,int,int);//后缀有两个小写字母 SET_x_y`  
 ### block函数显示特定图形
 ***b_block***类型:unicode字符映射的类型  
 ***b_color***类型:颜色  
-colorblock():生成一个色块，之间没有空隙  
+***colorblock***:生成一个色块，之间没有空隙  
 ### command函数实现一些特定操作  
 ***cc_common***:指令类型，实现关回显、flush等功能  
-### sscreen函数实现终端分辨率修改  
+### screen函数实现终端分辨率修改  
  测试没有效果，可能是终端不支持该指令  
 ## 用法  
 ![用法](https://github.com/Marspacecraft/ColorCout/blob/main/pic2.png)
