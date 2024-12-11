@@ -4,9 +4,7 @@
 #include <iostream>
 
 /*****************************
-	终端需要支持ANSI转义序列
-	一般linux终端都会支持
-	win10之前的终端可能不支持
+	
 	https://web.archive.org/web/20060206022229/http://enterprise.aacc.cc.md.us/~rhs/ansi.html
 *****************************/
 
