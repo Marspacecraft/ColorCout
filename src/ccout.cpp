@@ -332,6 +332,8 @@ colorcout& colorcout::cursor(c_cmd cmd)
 		case c_cmd::DEL_ROW_ALL:
 		std::cout << "\033[2K";
 		break;
+		default:
+		break;
 	}
 
 	return *this;
@@ -362,6 +364,8 @@ colorcout& colorcout::cursor(c_cmd cmd,int n)
 		case c_cmd::Y_DOWN_n:
 		std::cout << "\033[" << n << "E";
 		break;
+		default:
+		break;
 	}
 
 	return *this;
@@ -373,6 +377,8 @@ colorcout& colorcout::cursor(c_cmd cmd,int x,int y)
 	{
 		case c_cmd::SET_x_y:
 		std::cout << "\033[" << y << ";" << x << "H";
+		break;
+		default:
 		break;
 	}
 
