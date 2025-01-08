@@ -1,6 +1,6 @@
 
 all:
-	@g++ -std=c++11 -o cctest -g -O0 testccout.cpp ./src/ccout.cpp -I ./src
+	@g++ -std=c++11 -o cctest -g -O0 testccout.cpp ./src/ccout.cpp -I ./include
 
 .PHONY:
 clean:

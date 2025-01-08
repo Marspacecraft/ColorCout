@@ -1,7 +1,14 @@
 
-#include <termios.h>
+#include <iostream>
 #include <unistd.h>
 #include "./ccout.h"
+#ifdef _WIN32
+#include <windows.h>
+#elif __unix__ || __MACH__
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <cstdlib> 
+#endif
 
 const char * colorcout::RESET = "\033[0m";
 
@@ -19,7 +26,7 @@ const f_cmd::ccmd_type f_cmd::SLASH=0x00001 << 9;			// 中横线
 const f_cmd::ccmd_type f_cmd::HOLD=0xffffff;				// 保持
 
 
-static const char* sg_block[] = 
+const std::string sg_block[] = 
 {	
 	"▁",// 0 BLOCK_DOWN_1_8
 	"▂",// 1 BLOCK_DOWN_2_8
@@ -54,6 +61,130 @@ static const char* sg_block[] =
 	"▟",// 26 EDGE_3_4
 	"■",// 27 EDGE_FULL
 };
+
+#ifdef _WIN32
+static int TerminalWidth() 
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns;
+    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) 
+        return 100;
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+}
+
+static int getCursorPosition() 
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE) 
+	{  
+        return 0;
+    }
+
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) 
+	{
+        return 0;
+    }
+
+    return csbi.dwCursorPosition.X;
+}
+
+void disableEcho() 
+{
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode;
+    GetConsoleMode(hStdin, &mode); 
+    mode &= ~ENABLE_ECHO_INPUT;    
+    SetConsoleMode(hStdin, mode); 
+}
+
+void enableEcho() 
+{
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode;
+    GetConsoleMode(hStdin, &mode); 
+    mode |= ENABLE_ECHO_INPUT;    
+    SetConsoleMode(hStdin, mode); 
+}
+
+static int set_echo_mode(int option)
+{
+	if(option)
+		enableEcho()
+	else
+		disableEcho();
+}
+
+#elif __unix__ || __MACH__
+static int getCursorPosition() 
+{
+    char buf[8];
+	int curline;
+	char cmd[]="echo -e '\033[6n'";//> /dev/null
+	struct termios save,raw;
+
+	ccout.command(cc_command::FLUSH);
+	tcgetattr(0,&save);
+	cfmakeraw(&raw); tcsetattr(0,TCSANOW,&raw);
+	if (isatty(fileno(stdin))) 
+	{
+		write(1,cmd,sizeof(cmd));
+		read (0 ,buf ,sizeof(buf));
+		//printf("\n\rCurrent Line: %s\n\r" , &buf[2]);
+	}
+	tcsetattr(0,TCSANOW,&save);
+	ccout.cursor(c_cmd::MOVE_LEFT_n,10);
+	ccout.cursor(c_cmd::DEL_BEHIND);
+	int x=0,y=0,f=0;
+	for(int i=2;i<8;++i)
+	{
+		if(buf[i]>='0'&&buf[i]<='9')
+		{
+			if(f)		
+				x = 10*x + buf[i] - '0';
+			else
+				y = 10*y + buf[i] - '0';
+		}
+		else
+		{
+			if(++f>1)
+				break;
+		}
+	}
+
+	if(x > 10)
+		x-=10;
+	return x;
+}
+static int TerminalWidth() 
+{
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) 
+        return 100;
+    return w.ws_col+10;
+
+}
+static int set_echo_mode(int option)
+{
+	int err;
+	struct termios term;
+	if(tcgetattr(STDIN_FILENO ,&term)==-1)
+		return -1;
+	
+	if(option)
+		term.c_lflag |=(ECHO | ECHOE | ECHOK | ECHONL);
+	else
+		term.c_lflag &=~(ECHO | ECHOE | ECHOK | ECHONL);
+
+	err=tcsetattr(STDIN_FILENO,TCSAFLUSH,&term);
+	if(err==-1 && err==EINTR)
+		return 1; 
+	
+	return 0;
+}
+
+#endif
+
 
 colorcout& colorcout::font(f_color font)
 {
@@ -123,6 +254,23 @@ colorcout& colorcout::font(f_cmd::ccmd_type cmd,f_color font,f_backcolor bkgd)
 	return fontcout;
 }
 
+
+colorcout& colorcout::fulllines(f_color color,const std::string str,std::string c)
+{
+	ccout.font(color)<<str;
+	int width = terminanwidth();
+	int pos = cursorposition();
+
+	pos %=width;
+	pos = width - pos;
+	//pos /= c.length();
+
+	for(int i=0;i<pos;i++)
+		ccout.font(color)<<c;
+
+	return *this;
+}
+
 std::string colorcout::GetCmd() const
 {
 	std::string ret("0");
@@ -147,6 +295,9 @@ colorcout& colorcout::cursor(c_cmd cmd)
 	{
 		case c_cmd::HOME:
 		std::cout << "\033[1G";
+		break;
+		case c_cmd::END:
+		std::cout << "\033[1F";
 		break;
 		case c_cmd::ENTER:
 		std::cout << "\033[1E";
@@ -226,26 +377,6 @@ colorcout& colorcout::cursor(c_cmd cmd,int x,int y)
 	}
 
 	return *this;
-}
-
-
-static int set_echo_mode(int option)
-{
-	int err;
-	struct termios term;
-	if(tcgetattr(STDIN_FILENO ,&term)==-1)
-		return -1;
-	
-	if(option)
-		term.c_lflag |=(ECHO | ECHOE | ECHOK | ECHONL);
-	else
-		term.c_lflag &=~(ECHO | ECHOE | ECHOK | ECHONL);
-
-	err=tcsetattr(STDIN_FILENO,TCSAFLUSH,&term);
-	if(err==-1 && err==EINTR)
-		return 1; 
-	
-	return 0;
 }
 
 colorcout& colorcout::command(cc_command cmd)
@@ -345,6 +476,15 @@ colorcout& colorcout::screen(s_cmd cmd)
 	return *this;
 }
 
+int colorcout::terminanwidth()
+{
+	return TerminalWidth();
+}
+
+int colorcout::cursorposition()
+{
+	return getCursorPosition();
+}
 
 colorcout& ccout = colorcout::GetInstance();
 colorcout& operator<<(colorcout& out,colorcout& a)
@@ -360,5 +500,4 @@ std::ostream& operator<<(colorcout& a,std::ostream& out)
 {
 	return out;
 }
-
 

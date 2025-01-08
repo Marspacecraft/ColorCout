@@ -56,6 +56,7 @@ enum class c_cmd:int
 	MOVE_RIGHT_n,	// 上移n位
 	MOVE_DOWN_n,	// 下移n位
 	HOME,			// 移动到第一列
+	END,			// 移动到第一列
 	ENTER,			// 下一行第一列
 	X_x,			// 移动到第x列
 	Y_UP_n,			// 上移n行 第1列
@@ -170,6 +171,8 @@ public:
 	colorcout& font(f_cmd::ccmd_type,f_color);
 	// 设置字体格式、颜色和背景
 	colorcout& font(f_cmd::ccmd_type,f_color,f_backcolor);
+	// 填充正行，不足的以char填充
+	colorcout& fulllines(f_color,const std::string,std::string);
 
 	f_color GetColor()const {return _font;}
 	f_backcolor GetBackColor()const {return _bkgd;}
@@ -205,13 +208,24 @@ public:
 	*****************************/
 	colorcout& screen(s_cmd);
 
+	/*****************************
+		终端一行可以显示的字符个数
+	*****************************/
+	int terminanwidth();
+
+	/*****************************
+		光标所在列
+	*****************************/
+	int cursorposition();
+
+
 private:
 	colorcout() = default;
 	f_color _font;
 	f_backcolor _bkgd;
 	f_cmd::ccmd_type _cmd;
 };
-
+extern const std::string sg_block[];
 extern colorcout& ccout;
 // 重载<< 可以切换类型
 extern colorcout& operator<<(colorcout& out,colorcout& a);
