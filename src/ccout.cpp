@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <unistd.h>
-#include "./ccout.h"
+#include "ccout.h"
 #ifdef _WIN32
 #include <windows.h>
 #elif __unix__ || __MACH__
@@ -128,8 +128,8 @@ static int getCursorPosition()
 	cfmakeraw(&raw); tcsetattr(0,TCSANOW,&raw);
 	if (isatty(fileno(stdin))) 
 	{
-		write(1,cmd,sizeof(cmd));
-		read (0 ,buf ,sizeof(buf));
+		ssize_t size = write(1,cmd,sizeof(cmd));
+		size = read (0 ,buf ,sizeof(buf));
 		//printf("\n\rCurrent Line: %s\n\r" , &buf[2]);
 	}
 	tcsetattr(0,TCSANOW,&save);
