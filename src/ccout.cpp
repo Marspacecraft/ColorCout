@@ -161,7 +161,7 @@ static int TerminalWidth()
     struct winsize w;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) 
         return 100;
-    return w.ws_col+10;
+    return w.ws_col;
 
 }
 static int set_echo_mode(int option)
